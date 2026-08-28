@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { WebSocketServer } = require('ws');
 const { Pool } = require('pg');
+const { initDatabase, runMigrations } = require('./setupDb');
 require('dotenv').config();
 
 const app = express();
@@ -61,12 +62,18 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
 });
 
-// Test connection
-pool.connect((err) => {
+// Test connection + initialize schema in one place
+pool.connect(async (err) => {
   if (err) {
     console.error('Erro ao conectar no PostgreSQL:', err.message);
-  } else {
-    console.log('Conectado ao PostgreSQL');
+    return;
+  }
+  console.log('Conectado ao PostgreSQL');
+  try {
+    await initDatabase(pool);
+    await runMigrations(pool);
+  } catch (initErr) {
+    console.error('Erro ao inicializar o banco:', initErr.message);
   }
 });
 

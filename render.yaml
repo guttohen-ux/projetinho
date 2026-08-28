@@ -1,0 +1,37 @@
+databases:
+  - name: taskflow-db
+    databaseName: taskflow
+    user: taskflow
+    plan: free
+
+services:
+  - type: web
+    name: taskflow
+    runtime: node
+    plan: free
+    buildCommand: pnpm install && pnpm build
+    startCommand: node server/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DB_HOST
+        fromDatabase:
+          name: taskflow-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: taskflow-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: taskflow-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: taskflow-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: taskflow-db
+          property: password

@@ -1,13 +1,22 @@
 const host = window.location.hostname;
 
-// VITE_API_URL é setado no build de produção (ex: https://seu-backend.onrender.com)
-// Em desenvolvimento, usamos o backend local na porta 3001.
+// VITE_API_URL é setado no build de produção (ex: https://seu-backend.onrender.com).
+// Se vazio: em dev usamos o backend local na porta 3001; em produção o servidor
+// Express do próprio Web Service serve o frontend e a API na mesma origem.
 const rawApi = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "");
+const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
 
-export const API_BASE = rawApi ? `${rawApi}/api` : `http://${host}:3001/api`;
+export const API_BASE = rawApi
+  ? `${rawApi}/api`
+  : import.meta.env.DEV
+    ? `http://${host}:3001/api`
+    : "/api";
+
 export const WS_URL = rawApi
   ? rawApi.replace(/^http/, "ws")
-  : `ws://${host}:3001`;
+  : import.meta.env.DEV
+    ? `ws://${host}:3001`
+    : `${wsScheme}://${host}`;
 
 export type Priority = 'alta' | 'média' | 'baixa'
 export type Status = 'backlog' | 'todo' | 'doing' | 'review' | 'done'
